@@ -1,0 +1,27 @@
+{
+ "namespace": "edu.ucla.sspace",
+ "protocol": "Coherence",
+
+ "types": [
+     {"name": "Sense", 
+      "type": "record",
+      "fields": [
+          {"name": "words", "type": {"type": "array", "items": "string"}}
+      ]
+     }
+ ],
+
+ "messages": {
+     "coherence": {
+         "request": [{"name": "sense", "type": "Sense"},
+                     {"name": "epsilon", "type": "double"}],
+         "response": "double"
+     },
+     "overlap": {
+         "request": [{"name": "sense1", "type": "Sense"},
+                     {"name": "sense2", "type": "Sense"},
+                     {"name": "epsilon", "type": "double"}],
+         "response": "double"
+     }
+ }
+}
