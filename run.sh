@@ -9,6 +9,7 @@ tokenizerModel=en-token.bin
 
 # Location parameters
 nytCorpusDir=nyt_dvd
+externalCorpusDir=
 externalCorpusFile=nyt03-one-doc-per-line.txt
 rngWordPairs=data/wordSim65pairs.tab
 wordSim353Pairs=data/combined.tab
@@ -17,10 +18,10 @@ wordSim353Pairs=data/combined.tab
 numTopTokens=1000
 numTopWordsPerTopic=10
 transform=logentropy
-topicSequence="$(seq -w 10 10 20)"
+topicSequence="$(seq -w 10 10 10)"
+lastTopic=20
 exponents="00 12 20"
 #topicSequence="$(seq -w 1 100) $(seq 110 10 500)"
-lastTopic=20
 numFolds=10
 minLabelCount=2
 port=50035
@@ -112,6 +113,7 @@ for t in $topicSequence; do
     $run $base.ExtractTopTerms $topTokens $numTopWordsPerTopic $topicDir/svd/nyt03_SVD_$t-ws.dat > $topicDir/svd/nyt03_SVD_$t.top10
 done
 
+fi
 
 # Step 7, factorize using LDA, this will create both factorized matrices and the
 # top 10 word lists.
@@ -121,6 +123,7 @@ for t in $topicSequence; do
     $run $base.TopicModelNewYorkTimes $topTokens $numTopWordsPerTopic $oneDocFile $t $topicDir/lda/nyt03_LDA_$t
 done
 
+exit
 # Create a list of all words that appeared in the top 10 list for every model
 # computed.  This list will be used to compute the words needed for all
 # coherence scores and allow the co-occurrence matrices to remain small.
@@ -189,8 +192,6 @@ done
 
 computeWordSimCorrelation $rngWordPairs > $topicDir/$rngCorrelationResults
 computeWordSimCorrelation $wordSim353Pairs > $topicDir/$wordSim353CorrelationResults
-
-fi
 
 $run $base.FormFolds $docLabels $numFolds $minLabelCount > $classifierFolds
 
