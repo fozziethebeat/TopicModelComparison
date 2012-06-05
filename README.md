@@ -1,12 +1,12 @@
 # Detailed Setup for Exploring Topic Coherence over many models and many topics
 
 We (Keith Stevens, Philip Kegelmeyer, David Andrzejewski, and David Buttler)
-published the paper [Exploring Topic Coherence over many models and many topics][1] 
-which compares several topic models using a variety of measures in an attempt to
-determine which model should be used in which application.  This evaluation
-secondly compares automatic coherence measures as a quick, task free method for
-comparing a variety of models.  Below is a detailed series of steps on how to
-replicate the results from the paper.
+published the paper [Exploring Topic Coherence over many models and many topics][1]
+(link to appear soon) which compares several topic models using a variety of
+measures in an attempt to determine which model should be used in which
+application.  This evaluation secondly compares automatic coherence measures as
+a quick, task free method for comparing a variety of models.  Below is a
+detailed series of steps on how to replicate the results from the paper.  
 
 The evaluation setup breaks down into the following steps:
 
@@ -54,7 +54,7 @@ files where each file looks something like this:
 This leaves out a lot of details, but it covers the key items we will need: (1)
 the full text of the article and (2) all online\_sections for the article.
 Extracting this can be kinda hairy.  The following snippet gives a gist of how
-to extract and format the neccesary data:
+to extract and format the necessary data:
 
 ``` scala
 import scala.xml.XML
@@ -119,7 +119,7 @@ properly filtered corpus.
 
 With all the pre-processing completed, we can now generate topics for the
 corpus.  We do this using two different methods (1) Latent Dirichlet Allocation
-and (2) Latent Semantic Analsysis.  Unless otherwise stated, we we performed
+and (2) Latent Semantic Analysis.  Unless otherwise stated, we we performed
 topic modeling using each method for 1 to 100 topics, and for 110 to 500 topics
 with steps of 10.  
 
@@ -151,9 +151,8 @@ topic in `nyt03_LDA_$nTopics.top10`.
 ### Processing for Latent Semantic Analysis
 
 Latent Semantic Analysis at it's core decomposes a term by document matrix into
-two smaller latent matrices using one of two methods: (1) [Singular Value
-Decomposition][6] and (2) [Non-negative Matrix Factorization][7].  We do this in
-two steps:
+two smaller latent matrices using one of two methods: (1) [Singular Value Decomposition][6] 
+and (2) [Non-negative Matrix Factorization][7].  We do this in two steps:
 
 1. Build a weighted term document matrix.
 2. Factorize the matrix using either SVD or NMF.
@@ -206,7 +205,7 @@ multi-step process:
 
 1. Compute the list of all words appearing in any topic
 2. Compute the Pointwise Mutual Information scores between all listed words
-   within an extrenal corpus (for the UCI metric)
+   within an external corpus (for the UCI metric)
 3. Compute document Co-Occurence scores for all listed words in the New York
    Times corpus (for the UMass metric)
 4. Start a server for each set of scores and query the server for the coherence
@@ -264,18 +263,18 @@ With each line corresponding to a topic with a given id computed by LDA using 10
 topics and evaluated by the UCI measure.  For our experiments, we considered
 using 1.0 and 1E-12 for epsilon.
 
-## Comparing Word Wimilarities with Semantic Judgements
+## Comparing Word Similarities with Semantic Judgements
 
 We compared the reduced word representations against two standard sets of
 semantic similarity judgements as our second experiment.  We're including the
 sets of semantic similarity judgements with this repository since they are both
-publiclly available.  The processing steps remains the same for both sets of
+publicly available.  The processing steps remains the same for both sets of
 judgements and each topic model.
 
-We use the [Spearman Rank Correlation][16] between humand semantic judgements and
+We use the [Spearman Rank Correlation][16] between humans semantic judgements and
 the cosine similarity between latent word representations as the key metric.  A
 higher rank correlation, or any other correlation measure, indicates that the
-latent feature space better captures relations observed by humand judges.  The
+latent feature space better captures relations observed by humans judges.  The
 [ComputeCorrelation][17] class will perform these calculations for a single set of
 semantic judgments and a term by topic matrix.  We run this with
 
@@ -283,8 +282,8 @@ semantic judgments and a term by topic matrix.  We run this with
 scala edu.ucla.sspace $topTokens nyt03_LDA_10-ws.dat data/wordSim65pairs.tab "LDA 10"
 ```
 
-Which computes the correlation betwee a LDA based topic model using 10 topics
-and the Rubensten and Goodenough dataset and again reports some tag information
+Which computes the correlation between a LDA based topic model using 10 topics
+and the Rubenstein and Goodenough dataset and again reports some tag information
 when printing the correlation value.  We do this for all topic models computed
 and the `data/wordSim65pairs.tab` and `data/combined.tab` semantic judgements
 files which correspond to the [Rubenstein and Goodenough][18] dataset and the
@@ -335,7 +334,7 @@ project.  A writeup on how to use this will be forth coming.
 
 ## Using the automated script
 
-The writeup so far has desecrated the steps we used to compute each experiment
+The writeup so far has described the steps we used to compute each experiment
 in more detail than provided in the original paper.  However, to make this even
 easier to replicate, we've provided a [run][23] script that automates the process
 as much as possible.  This section describes the minimum number of steps needed
@@ -421,3 +420,5 @@ statement turns out to be wrong).
   [26]: http://opennlp.sourceforge.net/models-1.5/
   [27]: https://github.com/fozziethebeat/S-Space/blob/dev-wordsi/data/english-stop-words-large.txt
   [28]: https://github.com/fozziethebeat/S-Space
+  [29]: https://github.com/fozziethebeat/TopicModelComparison
+  [30]: https://github.com/
