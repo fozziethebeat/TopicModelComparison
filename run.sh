@@ -127,7 +127,7 @@ exit
 # Create a list of all words that appeared in the top 10 list for every model
 # computed.  This list will be used to compute the words needed for all
 # coherence scores and allow the co-occurrence matrices to remain small.
-cat nyt_topics/{lda,nmf,svd}/*.top10 | tr " " "\n" | sort -u > $allTopicTerms
+cat $topicDir/{lda,nmf,svd}/*.top10 | tr " " "\n" | sort -u > $allTopicTerms
 
 # Extract a matrix that represents co-occurrence counts needed by the two
 # coherence metrics.  The UCI measure uses pmi counts from the training corpus
