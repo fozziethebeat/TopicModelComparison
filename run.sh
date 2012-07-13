@@ -45,9 +45,15 @@ classifierResults=classifier.accuracy.dat
 run="scala -J-Xmx2g -cp target/TopicModelEval-1.0-jar-with-dependencies.jar"
 base="edu.ucla.sspace"
 
-### Processing steps
+# Relocate this if block to skip some of the processing steps.  You might want
+# to do this if the processing pipeline crashed midway one step and you don't
+# want to re-do others.
+if [ 0 != 0 ]; then
+    echo Skipped steps
+fi
+exit
 
-if [[ 0 != 0 ]]; then
+### Processing steps
 
 # FIX STEP: Only do once.  The nyt xml files include a now invalid DOCTYPE link
 # so we must remove it in a hackish way.  This script will do it.  Comment out
@@ -113,8 +119,6 @@ for t in $topicSequence; do
     $run $base.ExtractTopTerms $topTokens $numTopWordsPerTopic $topicDir/svd/nyt03_SVD_$t-ws.dat > $topicDir/svd/nyt03_SVD_$t.top10
 done
 
-fi
-
 # Step 7, factorize using LDA, this will create both factorized matrices and the
 # top 10 word lists.
 # This step can easily be parallelized, with one node handling each LDA 
@@ -123,7 +127,6 @@ for t in $topicSequence; do
     $run $base.TopicModelNewYorkTimes $topTokens $numTopWordsPerTopic $oneDocFile $t $topicDir/lda/nyt03_LDA_$t
 done
 
-exit
 # Create a list of all words that appeared in the top 10 list for every model
 # computed.  This list will be used to compute the words needed for all
 # coherence scores and allow the co-occurrence matrices to remain small.
