@@ -9,21 +9,20 @@ tokenizerModel=en-token.bin
 
 # Location parameters
 nytCorpusDir=nyt_dvd
-externalCorpusDir=
+externalCorpusDir=./
 externalCorpusFile=nyt03-one-doc-per-line.txt
 rngWordPairs=data/wordSim65pairs.tab
 wordSim353Pairs=data/combined.tab
 
 # Value parameters
-numTopTokens=1000
+numTopTokens=36000
 numTopWordsPerTopic=10
 transform=logentropy
-topicSequence="$(seq -w 10 10 10)"
-lastTopic=20
 exponents="00 12 20"
-#topicSequence="$(seq -w 1 100) $(seq 110 10 500)"
+topicSequence="$(seq -w 1 100) $(seq 110 10 500)"
+lastTopic=500
 numFolds=10
-minLabelCount=2
+minLabelCount=200
 port=50035
 
 # These paramters refer to temporary files use during processing.  They don't
