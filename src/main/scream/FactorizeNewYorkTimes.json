@@ -1,0 +1,44 @@
+{
+  "title" : "FactorizeNewYorkTimes",
+  "timeout" : 600000000,
+  "inputFile" : "screamInput/nmfFactorizeNyt",
+  "inputDir" : "/user/stevens35/input/",
+  "outputDir" : "/user/stevens35/output/",
+  "runFile": "edu.ucla.sspace.MatrixFactorNewYorkTimes",
+  "jars": [
+    "target/TopicModelEval-1.0-jar-with-dependencies.jar",
+  ],
+  "lineParts": [
+     "termDocMatrix",
+     "reduxMethod",
+     "topics",
+     "termDocDir",
+     "outDir",
+     "wordSpaceMat",
+     "docSpaceMat",
+  ],
+  "downloads" : [
+    {
+        "location": "$termDocDir",
+        "name": "$termDocMatrix",
+    },
+  ]
+  "uploads" : [
+    {
+        "location": "$outDir",
+        "name": "$wordSpaceMat",
+    },
+    {
+        "location": "$outDir",
+        "name": "$docSpaceMat",
+    },
+  ],
+  "arguments" : [
+    "$termDocMatrix",
+    "$reduxMethod",
+    "$topics",
+    "$wordSpaceMat",
+    "$docSpaceMat",
+  ],
+}
+

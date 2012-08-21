@@ -1,0 +1,36 @@
+{
+  "title" : "WordSimCorrelation",
+  "timeout" : 600000000,
+  "inputFile" : "screamInput/WordSimCorrelation",
+  "inputDir" : "/user/stevens35/input/",
+  "outputDir" : "/user/stevens35/output/",
+  "runFile": "edu.ucla.sspace.ComputeCorrelation",
+  "jars": [
+    "target/TopicModelEval-1.0-jar-with-dependencies.jar",
+  ],
+  "lineParts": [
+     "Model",
+     "model",
+     "topics",
+     "evaluation",
+  ],
+  "files": [
+    "nyt03-top-tokens.txt",
+  ],
+  "downloads" : [
+    {
+        "location": "/data/nyt/topic/$model",
+        "name": "nyt03_${Model}_${topics}-ws.dat",
+    },
+    {
+        "location": "/user/stevens35/data",
+        "name": "$evaluation",
+    },
+  ]
+  "arguments" : [
+    "nyt03-top-tokens.txt",
+    "nyt03_${Model}_${topics}-ws.dat",
+    "$evaluation",
+    "\"$Model $topics\"",
+  ],
+}

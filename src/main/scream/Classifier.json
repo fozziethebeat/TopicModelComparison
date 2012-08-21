@@ -1,0 +1,35 @@
+{
+  "title" : "Classifier",
+  "timeout" : 600000000,
+  "inputFile" : "screamInput/Classifier",
+  "inputDir" : "/user/stevens35/input/",
+  "outputDir" : "/user/stevens35/output/",
+  "runFile": "edu.ucla.sspace.SchiselClassify",
+  "jars": [
+    "target/TopicModelEval-1.0-jar-with-dependencies.jar",
+  ],
+  "lineParts": [
+     "Model",
+     "model",
+     "topics",
+     "classifier",
+  ],
+  "files": [
+    "nyt03-doc-labels.txt",
+    "nyt03-classifier-folds.txt",
+  ],
+  "downloads" : [
+    {
+        "location": "/data/nyt/topic/$model",
+        "name": "nyt03_${Model}_${topics}-ds.dat",
+    },
+  ]
+  "arguments" : [
+    "-d",
+    "$classifier",
+    "nyt03_${Model}_${topics}-ds.dat",
+    "nyt03-doc-labels.txt",
+    "nyt03-classifier-folds.txt",
+    "'$Model $t $classifier'",
+  ],
+}

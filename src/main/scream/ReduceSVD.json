@@ -1,0 +1,36 @@
+{
+  "title" : "ReduceSVD",
+  "timeout" : 600000000,
+  "inputFile" : "screamInput/reduceSVD",
+  "inputDir" : "/user/stevens35/input/",
+  "outputDir" : "/user/stevens35/output/",
+  "runFile": "edu.ucla.sspace.ReduceSVD",
+  "jars": [
+    "target/TopicModelEval-1.0-jar-with-dependencies.jar",
+  ],
+  "lineParts": [
+     "hdfsDir",
+     "baseFile",
+     "outFile",
+     "topics",
+  ],
+  "downloads" : [
+    {
+        "location": "$hdfsDir",
+        "name": "$baseFile",
+    },
+  ]
+  "uploads" : [
+    {
+        "location": "$hdfsDir",
+        "name": "$outFile",
+    },
+  ],
+  "arguments" : [
+    "$topics",
+    "$baseFile",
+    "$outFile",
+  ],
+}
+
+

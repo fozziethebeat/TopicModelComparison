@@ -8,38 +8,40 @@ stopWords=~/devel/S-Space/data/english-stop-words-large.txt
 tokenizerModel=en-token.bin
 
 # Location parameters
-nytCorpusDir=nyt_dvd
-externalCorpusDir=
-externalCorpusFile=nyt03-one-doc-per-line.txt
-rngWordPairs=wordSim65pairs.tab
-wordSim353Pairs=combined.tab
+nytCorpusDir=/hdfs/data/corpora/nyt
+oneDocFile=$nytCorpusDir/nyt03-one-doc-per-line.txt
+externalCorpusDir=/hdfs/data/corpora/wackypedia
+externalCorpusFile=wackypediaOneLinePerDoc.txt
+rngWordPairs=data/wordSim65pairs.tab
+wordSim353Pairs=data/combined.tab
 
 # Value parameters
-numTopTokens=1000
+numTopTokens=50000
 numTopWordsPerTopic=10
 transform=logentropy
-topicSequence="$(seq -w 1 100) $(seq 110 10 500)"
+topicSequence="$(seq 100 10 500)"
 lastTopic=500
 exponents="00 12 20"
-#topicSequence="$(seq -w 1 100) $(seq 110 10 500)"
 numFolds=10
 minLabelCount=200
 port=50035
 
+outDir=results
 # These paramters refer to temporary files use during processing.  They don't
 # need to be changed unless you want to name things different.
-topicDir=nyt_topics
-oneDocFile=nyt03-one-doc-per-line.txt
+topicDir=nyt_disambig_topics
 docLabels=nyt03-doc-labels.txt
-topTokens=nyt03-top-tokens.txt
-allTopicTerms=nyt03-all-topic-terms.txt
-termDocMatrix=nyt03-term-doc-matrix-transform.matlab.mat
-uciStatsMatrix=nyt03-uci-stats.svdlibc-sparse-text.mat
-umassStatsMatrix=nyt03-umass-stats.svdlibc-sparse-text.mat
+topTokens=nyt03-disambig-top-tokens.txt
 classifierFolds=nyt03-classifier-folds.txt
 rngCorrelationResults=wordsim.rng.correlation.dat
 wordSim353CorrelationResults=wordsim.353.correlation.dat
 classifierResults=classifier.accuracy.dat
+docPrefix=nyt03-one-doc-per-line
+termDocPrefix=nyt03-term-doc-matrix
+hdfsDataDir=/user/stevens35/topic-eval-disambig/data
+hdfsOutDir=/user/stevens35/topic-eval-disambig/results
+clusterAlgs="hac-avg hac-single hac-complete hac-median kmeans eigen bok agglo boem"
+clusterNums="5 10 15 20"
 
 # Aliases for running commands.  These don't need changing.
 run="scala -J-Xmx2g -cp target/TopicModelEval-1.0-jar-with-dependencies.jar"
@@ -65,7 +67,7 @@ cat $oneDocFile | cut -f 2 | tr " " "\n" | sort | uniq -c | \
 
 # Step 3, include words in the similarity tests, just for safe keeping and
 # compact.
-cat data/wordsim*.terms.txt $topTokens | sort -u > .temp.txt
+cat multi-sense-tokens.txt $topTokens | sort -u > .temp.txt
 mv .temp.txt $topTokens
 
 # Step 4, re-run through the corpus so each document contains only the valid
@@ -77,7 +79,14 @@ cat $oneDocFile | cut -f 1 > $docLabels
 
 # Step 5, build the term doc matrix for LSA methods.  This will save the file as
 # a matlab sparse file.
-$run $base.BuildTermDocMatrix $topTokens $transform $oneDocFile $termDocMatrix
+for alg in $clusterAlgs; do
+    for k in $clusterNums; do
+        echo "Processing $docPrefix.$alg.$k.txt"
+        $run $base.BuildTermDocMatrix $topTokens $transform $nytCorpusDir/$docPrefix.$alg.$k.txt $nytCorpusDir/$termDocPrefix.$alg.$k.mat
+    done
+done
+
+hadoop fs -copyFromLocal $nytCorpusDir/*.mat $hdfsDataDir
 
 # Step 6, factorize the term doc matrix using both lsa methods and for a series
 # of desired topics.
@@ -87,30 +96,49 @@ mkdir -p $topicDir/{nmf,svd,lda}
 
 # This step can easily be parallelized, with one node handling each nmf
 # factorization.
-for t in $topicSequence; do
-    $run $base.MatrixFactorNewYorkTimes $termDocMatrix nmf $t \
-                                        $topicDir/nmf/nyt03_NMF_$t-ws.dat \
-                                        $topicDir/nmf/nyt03_NMF_$t-ds.dat
-done
-
+for alg in $clusterAlgs; do
+    for k in $clusterNums; do
+        for t in $topicSequence; do
+            echo $termDocPrefix.$alg.$k.mat nmf $t \
+                 $hdfsDataDir $hdfsOutDir \
+                 nyt03.nmf.$alg.$k.$t.ws.dat \
+                 nyt03.nmf.$alg.$k.$t.ds.dat
+        done
+    done
+done > screamInput/nmfFactorizeNyt
+#scream src/main/scream/FactorizeNewYorkTimes.json screamInput/nmfFactorizeNyt
 
 # For SVD, we can do it just once since the final factorization subsumes all
 # smaller factorizations.
-$run $base.MatrixFactorNewYorkTimes $termDocMatrix svd $lastTopic \
-                                    $topicDir/svd/nyt03_SVD_$lastTopic-ws.dat \
-                                    $topicDir/svd/nyt03_SVD_$lastTopic-ds.dat
+for alg in $clusterAlgs; do
+    for k in $clusterNums; do
+        echo $termDocPrefix.$alg.$k.mat svd $lastTopic \
+             $hdfsDataDir $hdfsOutDir \
+             nyt03.svd.$alg.$k.$lastTopic.ws.dat \
+             nyt03.svd.$alg.$k.$lastTopic.ds.dat
+    done
+done > screamInput/svdFactorizeNyt
+scream src/main/scream/FactorizeNewYorkTimes.json screamInput/svdFactorizeNyt
+
+fi 
  
 # Now tear out the smaller factorizations.
-for t in $topicSequence; do
-    [ $t == $lastTopic ] && continue
-    $run $base.ReduceSVD $t $topicDir/svd/nyt03_SVD_$lastTopic-ws.dat $topicDir/svd/nyt03_SVD_$t-ws.dat 
-    #$run $base.ReduceSVD $t $topicDir/svd/nyt03_SVD_$lastTopic-ds.dat $topicDir/svd/nyt03_SVD_$t-ds.dat 
-done
+for alg in $clusterAlgs; do
+    for k in $clusterNums; do
+        for t in $topicSequence; do
+            [ $t == $lastTopic ] && continue
+            echo $hdfsOutDir nyt03.svd.$alg.$k.$lastTopic.ws.dat nyt03.svd.$alg.$k.$t.ws.dat $t
+            echo $hdfsOutDir nyt03.svd.$alg.$k.$lastTopic.ds.dat nyt03.svd.$alg.$k.$t.ds.dat $t
+        done
+    done
+done > screamInput/reduceSvd
+scream src/main/scream/ReduceSVD.json screamInput/reduceSvd
 
+exit
 
 # Also extract the top terms for each reduced word space.
 for t in $topicSequence; do
-    $run $base.ExtractTopTerms $topTokens $numTopWordsPerTopic $topicDir/nmf/nyt03_NMF_$t-ws.dat > $topicDir/nmf/nyt03_NMF_$t.top10
+    #$run $base.ExtractTopTerms $topTokens $numTopWordsPerTopic $topicDir/nmf/nyt03_NMF_$t-ws.dat > $topicDir/nmf/nyt03_NMF_$t.top10
     $run $base.ExtractTopTerms $topTokens $numTopWordsPerTopic $topicDir/svd/nyt03_SVD_$t-ws.dat > $topicDir/svd/nyt03_SVD_$t.top10
 done
 
@@ -202,8 +230,6 @@ computeWordSimCorrelation $rngWordPairs > $topicDir/$rngCorrelationResults
 #computeWordSimCorrelation $wordSim353Pairs > $topicDir/$wordSim353CorrelationResults
 
 $run $base.FormFolds $docLabels $numFolds $minLabelCount > $classifierFolds
-
-fi
 
 # This part can be parallelized easily, with one node handling each run of a
 # classifier.
