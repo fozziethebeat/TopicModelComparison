@@ -9,19 +9,18 @@ tokenizerModel=en-token.bin
 
 # Location parameters
 nytCorpusDir=nyt_dvd
-externalCorpusDir=
+externalCorpusDir=./
 externalCorpusFile=nyt03-one-doc-per-line.txt
 rngWordPairs=wordSim65pairs.tab
 wordSim353Pairs=combined.tab
 
 # Value parameters
-numTopTokens=1000
+numTopTokens=36000
 numTopWordsPerTopic=10
 transform=logentropy
+exponents="00 12 20"
 topicSequence="$(seq -w 1 100) $(seq 110 10 500)"
 lastTopic=500
-exponents="00 12 20"
-#topicSequence="$(seq -w 1 100) $(seq 110 10 500)"
 numFolds=10
 minLabelCount=200
 port=50035
@@ -45,9 +44,15 @@ classifierResults=classifier.accuracy.dat
 run="scala -J-Xmx2g -cp target/TopicModelEval-1.0-jar-with-dependencies.jar"
 base="edu.ucla.sspace"
 
-### Processing steps
+# Relocate this if block to skip some of the processing steps.  You might want
+# to do this if the processing pipeline crashed midway one step and you don't
+# want to re-do others.
+if [ 0 != 0 ]; then
+    echo Skipped steps
+fi
+exit
 
-if [[ 0 != 0 ]]; then
+### Processing steps
 
 # FIX STEP: Only do once.  The nyt xml files include a now invalid DOCTYPE link
 # so we must remove it in a hackish way.  This script will do it.  Comment out
